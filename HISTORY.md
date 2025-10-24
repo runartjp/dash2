@@ -760,3 +760,619 @@ const likeResults = await Promise.all(likePromises);
 **プロジェクト完了日**: 2025-10-24
 **総開発期間**: 2日間（2025-10-23 〜 2025-10-24）
 **総実装機能数**: 12機能
+
+---
+
+## 2025-10-24 (Phase 8: プロフィールページ拡充)
+
+### ユーザープロフィール機能の実装
+
+#### 作業内容
+
+1. **Directusユーザーフィールド拡充**
+   - 既存フィールドの確認と活用:
+     - `avatar`: プロフィール画像（directus_filesへのリレーション）
+     - `description`: 短い自己紹介文
+     - `location`: 場所
+     - `title`: 肩書き
+     - `username`: ユーザー名
+   - 追加カスタムフィールド（9個）:
+     - `bio`: 詳細な自己紹介文（Markdown対応）
+     - `website`: ウェブサイトURL
+     - `twitter`: Twitterハンドル
+     - `linkedin`: LinkedInプロフィールURL
+     - `github`: GitHubユーザー名
+     - `birth_date`: 生年月日
+     - `phone`: 電話番号
+     - `occupation`: 職業
+     - `company`: 所属会社・組織
+   - スクリプト: `/add-profile-fields.js`
+
+2. **プロフィールAPI実装**
+   - `/portal/app/api/profile/route.ts` 作成
+   - GET: プロフィール情報取得
+     - 自分のプロフィール or クエリパラメータで他のユーザー
+     - 全フィールドを取得
+   - PATCH: プロフィール情報更新
+     - ホワイトリスト方式で許可されたフィールドのみ更新
+     - セッション確認と権限チェック
+
+3. **プロフィールページUI作成**
+   - `/portal/app/profile/page.tsx` 作成
+   - **レイアウト構成**:
+     - ヘッダー: カバー画像（グラデーション）
+     - プロフィール画像エリア（カメラボタン付き）
+     - 名前・ユーザー名表示
+     - 編集ボタン / 保存・キャンセルボタン
+   - **3カラムレイアウト**:
+     - 左カラム: 基本情報カード、SNSリンクカード
+     - 右カラム（2/3幅）: 自己紹介文エリア
+   - **表示モードと編集モード**:
+     - 表示モード: 読み取り専用、整形された表示
+     - 編集モード: 全フィールドを編集可能
+
+4. **プロフィール編集機能**
+   - インライン編集機能:
+     - 各フィールドにフォーム入力
+     - リアルタイムバリデーション
+     - 文字数カウント（description: 140文字制限）
+   - エラーハンドリング:
+     - 成功・エラーメッセージ表示
+     - API通信エラーの適切な処理
+
+5. **プロフィール画像アップロード機能**
+   - 既存の画像アップロードAPI (`/api/upload`) を活用
+   - カメラアイコンクリックでファイル選択
+   - アップロード処理:
+     1. ファイルサイズチェック（5MB以下）
+     2. 画像タイプチェック
+     3. `/api/upload` でsharp圧縮
+     4. `/api/profile` でavatar更新
+     5. プロフィール再取得
+   - アップロード中のローディング表示
+
+6. **ナビゲーションメニュー更新**
+   - サイドバーに「プロフィール」メニュー項目追加
+   - コミュニティセクションに配置
+   - ユーザー情報カードをクリック可能に:
+     - 通常時: ユーザー名・メールアドレス表示
+     - Collapsed時: ユーザーアイコンのみ
+     - どちらもクリックでプロフィールページに遷移
+
+#### 技術的な詳細
+
+**プロフィールページのレスポンシブデザイン**:
+```
+- モバイル: 1カラム（基本情報 → SNS → 自己紹介）
+- タブレット/デスクトップ: 3カラムレイアウト
+```
+
+**画像アップロードフロー**:
+```
+1. ユーザーが画像選択
+2. クライアント側でファイルサイズ・タイプチェック
+3. FormDataで/api/uploadにPOST
+4. サーバー側でsharp圧縮（最大1920px、品質80%）
+5. Directus /filesエンドポイントにアップロード
+6. 取得したfile IDで/api/profileをPATCH
+7. プロフィール再取得して画面更新
+```
+
+**フィールドホワイトリスト**:
+```typescript
+const allowedFields = [
+  'first_name', 'last_name', 'username', 'avatar',
+  'description', 'bio', 'location', 'title',
+  'website', 'twitter', 'linkedin', 'github',
+  'occupation', 'company', 'birth_date', 'phone',
+];
+```
+
+**SNSリンク表示**:
+- Twitter: `https://twitter.com/${username}`
+- GitHub: `https://github.com/${username}`
+- LinkedIn: 直接URL
+- Website: 直接URL
+- 各SNSに対応したFontAwesomeアイコン使用
+
+#### 実装ファイル
+
+**スクリプト**:
+- `/add-profile-fields.js` - プロフィールフィールド追加
+
+**API**:
+- `/portal/app/api/profile/route.ts` - プロフィール取得・更新
+
+**ページ**:
+- `/portal/app/profile/page.tsx` - プロフィールページUI
+
+**コンポーネント**:
+- `/portal/components/Sidebar.tsx` - ナビゲーションメニュー更新
+
+#### 機能一覧
+
+**実装完了機能**:
+- ✅ プロフィール情報の表示（15フィールド）
+- ✅ プロフィール情報の編集（インライン編集）
+- ✅ プロフィール画像のアップロード・更新
+- ✅ SNSリンク表示（Twitter, GitHub, LinkedIn, Website）
+- ✅ レスポンシブデザイン（モバイル/タブレット/デスクトップ）
+- ✅ リアルタイムバリデーション
+- ✅ エラーハンドリング
+- ✅ ナビゲーションメニュー統合
+
+**UI/UX特徴**:
+- カバー画像（グラデーション背景）
+- 円形プロフィール画像
+- ホバーエフェクト
+- トランジションアニメーション
+- FontAwesomeアイコン使用
+- Tailwind CSSスタイリング
+
+#### 今後の拡張案
+
+**プロフィール機能拡張**:
+- [ ] カバー画像のカスタマイズ
+- [ ] プロフィール画像のトリミング機能
+- [ ] Markdown表示対応（bio）
+- [ ] 公開/非公開設定
+- [ ] プロフィール閲覧履歴
+
+**他ユーザーのプロフィール閲覧**:
+- [ ] ユーザー名クリックで他のユーザーのプロフィール表示
+- [ ] フォロー機能
+- [ ] ユーザー検索
+
+**統計情報**:
+- [ ] 投稿数
+- [ ] いいね数
+- [ ] コメント数
+- [ ] フォロワー/フォロー中の数
+
+---
+
+**最終更新**: 2025-10-24 16:00
+**Phase 8完了**: ユーザープロフィール機能 ✅
+**総実装機能数**: 20機能
+
+---
+
+## 2025-10-24 (Phase 8続き: プロフィール改善)
+
+### ユーザーネーム編集機能とセキュリティ改善
+
+#### 問題発生
+1. サイドバー下部の背景が白く視認性が悪い（プロフィール名がグラデーション背景に重なる）
+2. プロフィール変更後、サイドバーに反映されない
+3. サイドバーにメールアドレスが表示されている（セキュリティリスク）
+4. usernameがサイドバーで`@admin`ではなく`ID: eca9e827`と表示される
+5. プロフィールページからusernameを編集できない
+
+#### 作業内容
+
+1. **プロフィールページUI修正**
+   - 問題: 氏名の背景が透明でグラデーションに重なり読みにくい
+   - 修正: `md:bg-transparent` を削除し、常に白背景+影を表示
+   - ファイル: `/portal/app/profile/page.tsx:280`
+   - 結果: 視認性が改善され、氏名が読みやすくなった
+
+2. **セッション更新機能実装**
+   - 問題: プロフィール更新後、サイドバーの名前が変わらない
+   - 実装:
+     - `useSession`の`update()`関数を使用
+     - プロフィール保存後に`await update()`を実行
+     - 500ms後に`window.location.reload()`で確実に反映
+   - ファイル: `/portal/app/profile/page.tsx:121-127`
+   - 結果: プロフィール変更が即座にサイドバーに反映されるようになった
+
+3. **サイドバーのセキュリティ改善**
+   - 問題: サイドバーにメールアドレスが表示されている
+   - 修正:
+     ```typescript
+     // 修正前
+     <p className="text-xs text-gray-500">{session.user.email}</p>
+
+     // 修正後
+     <p className="text-xs text-gray-500">
+       {(session.user as any).username ?
+         `@${(session.user as any).username}` :
+         `ID: ${session.user.id?.substring(0, 8)}`}
+     </p>
+     ```
+   - ファイル: `/portal/components/Sidebar.tsx:272`
+   - 結果: メールアドレスの代わりに@usernameまたはユーザーIDを表示
+
+4. **セッションへのusername追加**
+   - `/portal/lib/auth.ts`のjwtコールバックを修正
+   - ログイン時にusernameをトークンに保存
+   - セッション更新時（`trigger === 'update'`）にDirectusから最新のusernameを取得
+   - ファイル: `/portal/lib/auth.ts:80, 106, 120`
+
+5. **プロフィールページにusername編集機能追加**
+   - 問題: usernameがフロントエンドから編集できない
+   - 実装:
+     - 編集モードに@usernameの入力フィールドを追加
+     - 名前（first_name, last_name）の下に配置
+     - プレースホルダー: 「ユーザー名（英数字とアンダースコアのみ）」
+     - パターン検証: `[a-zA-Z0-9_]+`
+   - ファイル: `/portal/app/profile/page.tsx:301-311`
+   - APIのallowedFieldsリストに既に含まれているため追加変更不要
+   - 結果: プロフィール編集画面からusernameを変更可能に
+
+#### 技術的な詳細
+
+**セッション更新フロー**:
+```typescript
+// プロフィール保存処理
+const handleSave = async () => {
+  // 1. APIでプロフィール更新
+  await fetch('/api/profile', { method: 'PATCH', ... });
+
+  // 2. セッション更新
+  await update();
+
+  // 3. 少し待ってからリロード（セッション反映のため）
+  setTimeout(() => {
+    window.location.reload();
+  }, 500);
+};
+```
+
+**username編集UI**:
+```typescript
+{isEditing ? (
+  <div className="space-y-2">
+    <div className="flex gap-2">
+      <input value={editedProfile.first_name} placeholder="名" />
+      <input value={editedProfile.last_name} placeholder="姓" />
+    </div>
+    <div className="flex items-center gap-2">
+      <span className="text-gray-600">@</span>
+      <input
+        value={editedProfile.username || ''}
+        onChange={(e) => handleInputChange('username', e.target.value)}
+        placeholder="ユーザー名（英数字とアンダースコアのみ）"
+        pattern="[a-zA-Z0-9_]+"
+      />
+    </div>
+  </div>
+) : (
+  <div>
+    <h1>{profile.first_name} {profile.last_name}</h1>
+    {profile.username && <p>@{profile.username}</p>}
+  </div>
+)}
+```
+
+#### 修正ファイル
+
+- `/portal/app/profile/page.tsx` - UI修正、セッション更新、username編集フィールド追加
+- `/portal/components/Sidebar.tsx` - メールアドレス→@username表示に変更
+- `/portal/lib/auth.ts` - usernameをセッションに追加、更新処理実装
+
+#### 動作確認
+
+✅ プロフィール名の背景が白色で視認性向上
+✅ プロフィール保存後、サイドバーに名前変更が反映される
+✅ サイドバーにメールアドレスではなく@usernameが表示される
+✅ プロフィール編集画面でusernameを変更可能
+✅ username変更後、サイドバーに即座に反映される
+✅ 再ログイン不要でusernameが表示される
+
+#### セキュリティ向上
+
+- ✅ サイドバーからメールアドレス表示を削除
+- ✅ @usernameまたはユーザーID（最初の8文字）のみ表示
+- ✅ 個人情報の露出を最小化
+
+---
+
+**最終更新**: 2025-10-24 17:00
+**Phase 8完了**: プロフィール機能（username編集含む） ✅
+**総実装機能数**: 21機能
+
+---
+
+## 2025-10-24 (Phase 9: プロジェクト・タスク管理システム実装)
+
+### プロジェクト・タスク管理システムの構築
+
+#### 作業内容
+
+1. **Directusコレクション作成**
+   - `projects`コレクション作成（10フィールド）
+     - name, key, description, status, priority, start_date, end_date, progress
+     - owner (Many-to-One → directus_users)
+   - `tasks`コレクション作成（7フィールド）
+     - title, description, status, priority, due_date
+     - project (Many-to-One → projects)
+     - assignee (Many-to-One → directus_users)
+   - スクリプト:
+     - `create-project-task-collections.js` - コレクション作成
+     - `add-task-assignee.js` - assigneeフィールド追加
+     - `fix-relations-simple.js` - リレーション修正
+
+2. **API実装（全10エンドポイント）**
+   - `/api/projects` - GET/POST
+   - `/api/projects/[id]` - GET/PUT/DELETE
+   - `/api/tasks` - GET/POST（プロジェクトフィルター対応）
+   - `/api/tasks/[id]` - GET/PUT/DELETE
+   - 機能:
+     - 管理者認証トークン自動取得
+     - Populate処理で関連データ取得
+     - プロジェクトキー自動生成（PROJ-001形式）
+
+3. **フロントエンドUI実装**
+   - プロジェクト一覧ページ (`/projects`)
+     - カード形式表示
+     - ステータスバッジ（5種類）
+     - 優先度バッジ（3種類）
+     - 進捗バー（0-100%）
+     - レスポンシブグリッド（1/2/3列）
+   - タスク一覧ページ (`/tasks`)
+     - テーブル形式表示
+     - ステータス・優先度フィルター
+     - 期限超過警告（赤色表示）
+     - プロジェクトリンク
+     - 担当者表示
+
+4. **サイドバーメニュー更新**
+   - 「プロジェクト管理」セクション追加
+   - 「プロジェクト」メニュー項目（フォルダーアイコン）
+   - 「タスク」メニュー項目（タスクアイコン）
+
+#### 技術的な詳細
+
+**リレーション構造:**
+```
+directus_users ←─ Projects.owner (Many-to-One)
+Projects ←─ Tasks.project (Many-to-One)
+Projects.tasks (One-to-Many 逆参照)
+directus_users ←─ Tasks.assignee (Many-to-One)
+```
+
+**プロジェクトキー自動生成ロジック:**
+- 既存のプロジェクト数をカウント
+- 次の番号を決定（count + 1）
+- PROJ-001形式のキーを生成（3桁ゼロ埋め）
+
+**API Populate処理:**
+- Projects: `fields=*,owner.first_name,owner.last_name,owner.username`
+- Tasks: `fields=*,project.id,project.name,project.key,assignee.*`
+
+#### 実装ファイル
+
+**Directusセットアップ:**
+- `/check-collections.js` - コレクション確認スクリプト
+- `/create-project-task-collections.js` - コレクション作成
+- `/add-task-assignee.js` - assigneeフィールド追加
+- `/fix-relations-simple.js` - リレーション修正
+
+**API:**
+- `/portal/app/api/projects/route.ts` - Projects GET/POST
+- `/portal/app/api/projects/[id]/route.ts` - Projects GET/PUT/DELETE
+- `/portal/app/api/tasks/route.ts` - Tasks GET/POST
+- `/portal/app/api/tasks/[id]/route.ts` - Tasks GET/PUT/DELETE
+
+**フロントエンド:**
+- `/portal/app/projects/page.tsx` - プロジェクト一覧
+- `/portal/app/tasks/page.tsx` - タスク一覧
+- `/portal/components/Sidebar.tsx` - サイドバーメニュー更新
+
+**ドキュメント:**
+- `/PROJECT_TASK_SYSTEM_SUMMARY.md` - 技術仕様書
+- `/PROJECT_TASK_IMPLEMENTATION_COMPLETE.md` - 実装完了レポート
+
+#### 動作確認
+
+✅ Directusコレクション作成完了
+✅ リレーション設定完了（3個）
+✅ API実装完了（10エンドポイント）
+✅ プロジェクト一覧ページ表示
+✅ タスク一覧ページ表示
+✅ フィルタリング機能動作
+✅ サイドバーメニュー表示
+
+#### 参考プロジェクト
+
+dashプロジェクト（`/home/user/projects/active/dash`）を参考に実装:
+- コレクション設計
+- API実装パターン
+- UI/UXデザイン
+
+#### 次回作業予定（オプション）
+
+**Phase 2: 詳細ページ実装**
+- [ ] プロジェクト詳細ページ (`/projects/[id]`)
+- [ ] タスク詳細ページ (`/tasks/[id]`)
+
+**Phase 3: 作成/編集ページ実装**
+- [ ] プロジェクト作成ページ (`/projects/new`)
+- [ ] プロジェクト編集ページ (`/projects/[id]/edit`)
+- [ ] タスク作成ページ (`/tasks/new`)
+- [ ] タスク編集ページ (`/tasks/[id]/edit`)
+
+**Phase 4: 追加機能**
+- [ ] ダッシュボード統計
+- [ ] カンバンボード
+- [ ] コメント機能
+- [ ] ファイル添付
+
+---
+
+**最終更新**: 2025-10-24 18:00
+**Phase 9完了**: プロジェクト・タスク管理システム ✅
+**総実装機能数**: 23機能（コミュニティ21 + プロジェクト管理2）
+**作成されたコレクション**: 2個（projects, tasks）
+**作成されたAPIエンドポイント**: 10個
+**作成されたページ**: 2個（プロジェクト一覧、タスク一覧）
+**総作業時間**: 約2時間
+
+---
+
+## 2025-10-24 (Phase 10: タスク管理機能拡充)
+
+### タスク管理UIの改善と担当者機能の実装
+
+#### 作業内容
+
+1. **タスク一覧画面の改善**
+   - ステータス列をドロップダウンに変更（直接編集可能）
+   - 優先度列をドロップダウンに変更（直接編集可能）
+   - 「緊急」優先度オプションを追加
+   - プロジェクト名を「PROJ-XXX - プロジェクト名」形式で表示
+   - プロジェクト名表示のためのデータ補完処理実装
+   - ファイル: `/portal/app/tasks/page.tsx`
+
+2. **プロジェクト詳細画面の拡充**
+   - 関連タスク一覧セクションを追加
+   - タスク数のカウント表示
+   - 「+ タスクを追加」ボタン（プロジェクトが自動選択される）
+   - 各タスクのステータス・優先度バッジ表示
+   - タスクをクリックで詳細ページに遷移
+   - ファイル: `/portal/app/projects/[id]/page.tsx`
+
+3. **タスク新規作成画面の改善**
+   - URLクエリパラメータからプロジェクトIDを取得して自動選択
+   - プロジェクト詳細画面から「+ タスクを追加」で遷移すると自動選択される
+   - ファイル: `/portal/app/tasks/new/page.tsx`
+
+4. **タスク詳細画面の日本語化**
+   - ステータス・優先度を日本語表示に変更
+   - `statusLabels`と`priorityLabels`マッピング追加
+   - 「done」→「完了」、「medium」→「中」などに変換
+   - ファイル: `/portal/app/tasks/[id]/page.tsx`
+
+5. **Employeeロールと社員管理**
+   - Directusに「Employee」ロールを作成
+   - projects/tasksへのフルアクセス権限を付与
+   - directus_usersへの読取権限を付与（担当者選択用）
+   - テスト社員ユーザー3名を作成:
+     - 山田 太郎 (yamada@example.com)
+     - 佐藤 花子 (sato@example.com)
+     - 田中 次郎 (tanaka@example.com)
+   - スクリプト: `/create-employee-role.js`
+
+6. **社員ユーザー取得API実装**
+   - `/api/users/employees` エンドポイント作成
+   - Administrator と Employee ロールのユーザーのみ取得
+   - status=activeでフィルタリング
+   - 姓名順にソート（日本語対応）
+   - ファイル: `/portal/app/api/users/employees/route.ts`
+
+7. **タスク新規作成画面に担当者選択機能追加**
+   - 担当者選択ドロップダウンを追加
+   - 社員リストを自動取得して表示
+   - 「姓 名 (メールアドレス)」形式で表示
+   - ファイル: `/portal/app/tasks/new/page.tsx`
+
+#### 技術的な詳細
+
+**プロジェクト名表示の問題と解決:**
+- 問題: DirectusのAPIが`project: 2`（IDのみ）を返し、名前が展開されない
+- 原因: Many-to-Oneリレーションの展開が正しく動作していない
+- 解決策: クライアント側でデータ補完
+  1. タスクとプロジェクトを並列取得（`Promise.all`）
+  2. プロジェクトIDをキーとしたMapを作成
+  3. タスクデータのプロジェクトIDを完全なオブジェクトに置き換え
+
+```typescript
+const [tasksResponse, projectsResponse] = await Promise.all([
+  fetch('/api/tasks'),
+  fetch('/api/projects'),
+]);
+
+const projectsMap = new Map(projectsData.map((p: any) => [p.id, p]));
+
+const enrichedTasks = tasksData.map((task: any) => ({
+  ...task,
+  project: typeof task.project === 'number' && projectsMap.has(task.project)
+    ? projectsMap.get(task.project)
+    : task.project,
+}));
+```
+
+**ロールベース設計の利点:**
+- 社員と顧客を同じデータベースで管理
+- ロールで権限を分離（Employee / Customer）
+- 社員は全機能にアクセス可能
+- 顧客は限定的な機能のみ（将来実装予定）
+- 1アカウントで全機能を利用可能
+
+**社員ユーザー取得API:**
+```typescript
+// Administrator と Employee ロールのユーザーのみ
+const url = `${DIRECTUS_URL}/users?fields=id,first_name,last_name,email,role.name&filter[role][name][_in]=Administrator,Employee&filter[status][_eq]=active`;
+
+// 姓名順にソート
+sortedUsers.sort((a, b) => {
+  const nameA = `${a.last_name}${a.first_name}`;
+  const nameB = `${b.last_name}${b.first_name}`;
+  return nameA.localeCompare(nameB, 'ja');
+});
+```
+
+#### 実装ファイル
+
+**スクリプト:**
+- `/check-roles.js` - ロール一覧確認
+- `/create-employee-role.js` - Employeeロール作成・社員ユーザー作成
+- `/check-task-assignee.js` - タスクのassigneeデータ確認
+
+**API:**
+- `/portal/app/api/users/employees/route.ts` - 社員ユーザー取得
+
+**フロントエンド:**
+- `/portal/app/tasks/page.tsx` - タスク一覧（編集機能・プロジェクト名表示）
+- `/portal/app/tasks/new/page.tsx` - タスク作成（担当者選択）
+- `/portal/app/tasks/[id]/page.tsx` - タスク詳細（日本語表示）
+- `/portal/app/projects/[id]/page.tsx` - プロジェクト詳細（関連タスク表示）
+
+#### 問題点と次回作業
+
+**現在の問題:**
+- ✅ タスク一覧画面でステータス・優先度編集: 実装完了
+- ✅ プロジェクト詳細画面で関連タスク表示: 実装完了
+- ✅ タスク新規作成画面で担当者選択: 実装完了
+- ❌ **既存タスクに担当者が未設定**: nullのため表示されない
+- ❌ **タスク編集画面が未実装**: 担当者を後から設定できない
+
+**次回実装予定:**
+
+1. **タスク編集画面の作成**
+   - `/portal/app/tasks/[id]/edit/page.tsx` を作成
+   - 新規作成画面と同様の担当者選択機能
+   - 既存データの読み込みと更新処理
+
+2. **タスク一覧画面で担当者表示**
+   - 現在は詳細画面でのみ表示
+   - 一覧画面にも担当者列を追加予定
+
+3. **既存タスクへの担当者設定**
+   - 編集画面から担当者を追加できるようにする
+   - 一覧画面から直接割り当て機能も検討
+
+4. **テストデータ作成**
+   - 担当者付きのテストタスクを作成
+   - 機能の動作確認用
+
+#### データ確認結果
+
+既存タスク（3件）の担当者状態:
+```
+ID: 1, タイトル: デザインカンプ作成, Assignee: null
+ID: 2, タイトル: フロントエンド実装, Assignee: null
+ID: 3, タイトル: 要件定義, Assignee: null
+```
+
+→ すべてのタスクで`assignee: null`のため、担当者が表示されないのは正常動作
+
+---
+
+**最終更新**: 2025-10-24 21:30
+**Phase 10完了**: タスク管理機能拡充（担当者機能実装） ✅
+**総実装機能数**: 30機能
+**作成されたロール**: 1個（Employee）
+**作成された社員ユーザー**: 3名
+**今日の作業時間**: 約3時間
+

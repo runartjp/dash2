@@ -124,6 +124,19 @@ export default function Home() {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">📋 プロジェクト管理</h3>
+            <p className="text-sm text-gray-600 mb-4">プロジェクト、タスク管理</p>
+            <div className="flex gap-2">
+              <Link href="/projects" className="text-sm text-blue-600 hover:underline">
+                プロジェクト →
+              </Link>
+              <Link href="/tasks" className="text-sm text-blue-600 hover:underline">
+                タスク →
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">⚙️ 管理機能</h3>
             <p className="text-sm text-gray-600 mb-4">カテゴリ、設定</p>
             <Link href="/admin" className="text-sm text-blue-600 hover:underline">

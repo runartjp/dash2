@@ -360,7 +360,7 @@ export async function getCategories(type?: string) {
   const filter = type ? { type: { _eq: type } } : {};
   return await directus.request(
     readItems('categories', {
-      filter,
+      filter: filter as any,
       sort: ['display_order', 'name'],
     })
   );
@@ -370,8 +370,8 @@ export async function getCategories(type?: string) {
 export async function getArticles(status: string = 'published') {
   return await directus.request(
     readItems('public_articles', {
-      filter: { status: { _eq: status } },
-      fields: ['*', { category: ['id', 'name', 'slug'] }],
+      filter: { status: { _eq: status } } as any,
+      fields: ['*', { category: ['id', 'name', 'slug'] }] as any,
       sort: ['-date_created'],
     })
   );
@@ -380,8 +380,8 @@ export async function getArticles(status: string = 'published') {
 export async function getArticleBySlug(slug: string) {
   const articles = await directus.request(
     readItems('public_articles', {
-      filter: { slug: { _eq: slug } },
-      fields: ['*', { category: ['id', 'name', 'slug'] }],
+      filter: { slug: { _eq: slug } } as any,
+      fields: ['*', { category: ['id', 'name', 'slug'] }] as any,
       limit: 1,
     })
   );
@@ -404,7 +404,7 @@ export async function getFAQs(categoryId?: number) {
 export async function getTherapists(status: string = 'active') {
   return await directus.request(
     readItems('members_therapists', {
-      filter: { status: { _eq: status } },
+      filter: { status: { _eq: status } } as any,
       sort: ['-rating_average', 'name'],
     })
   );
@@ -420,8 +420,8 @@ export async function getTherapistById(id: number) {
 export async function getCourses(status: string = 'published') {
   return await directus.request(
     readItems('members_courses', {
-      filter: { status: { _eq: status } },
-      fields: ['*', { instructor: ['id', 'name', 'specialty'], category: ['id', 'name'] }],
+      filter: { status: { _eq: status } } as any,
+      fields: ['*', { instructor: ['id', 'name', 'specialty'], category: ['id', 'name'] }] as any,
       sort: ['-featured', '-date_created'],
     })
   );
@@ -446,8 +446,8 @@ export async function getCommunityPosts(groupId?: number) {
 
   return await directus.request(
     readItems('community_posts', {
-      filter,
-      fields: ['*', { group: ['id', 'name'] }],
+      filter: filter as any,
+      fields: ['*', { group: ['id', 'name'] }] as any,
       sort: ['-is_pinned', '-date_created'],
       limit: 50,
     })
@@ -458,8 +458,8 @@ export async function getCommunityPosts(groupId?: number) {
 export async function getGroups(status: string = 'active') {
   return await directus.request(
     readItems('community_groups', {
-      filter: { status: { _eq: status } },
-      fields: ['*', { category: ['id', 'name'] }],
+      filter: { status: { _eq: status } } as any,
+      fields: ['*', { category: ['id', 'name'] }] as any,
       sort: ['-member_count'],
     })
   );

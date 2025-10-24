@@ -89,7 +89,7 @@ export default function CommunityPage() {
         const likedPostIds = new Set(reset ? [] : likedPosts);
 
         // 全ての投稿のいいね状態を並列で取得
-        const likePromises = data.map(post =>
+        const likePromises = data.map((post: Post) =>
           fetch(`/api/posts/likes?postId=${post.id}`)
             .then(res => res.ok ? res.json() : null)
             .then(likeData => ({ postId: post.id, liked: likeData?.liked || false }))
@@ -701,71 +701,6 @@ export default function CommunityPage() {
                     </div>
                   )}
 
-                  {/* 旧画像グリッド（削除予定） */}
-                  {post.images && post.images.length > 0 && (
-                    <div className="mb-4">
-                      {post.images.length === 1 && (
-                        <div className="rounded-lg overflow-hidden">
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${post.images[0].directus_files_id?.id}`}
-                            alt={post.images[0].directus_files_id?.filename_download || '画像'}
-                            className="w-full max-h-96 object-contain bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity"
-                            onClick={() => {/* TODO: ライトボックス */}}
-                          />
-                        </div>
-                      )}
-                      {post.images.length === 2 && (
-                        <div className="grid grid-cols-2 gap-2">
-                          {post.images.map((img, idx) => (
-                            <div key={idx} className="rounded-lg overflow-hidden">
-                              <img
-                                src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${img.directus_files_id?.id}`}
-                                alt={img.directus_files_id?.filename_download || `画像 ${idx + 1}`}
-                                className="w-full h-48 object-cover bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity"
-                                onClick={() => {/* TODO: ライトボックス */}}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {post.images.length === 3 && (
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="col-span-2 rounded-lg overflow-hidden">
-                            <img
-                              src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${post.images[0].directus_files_id?.id}`}
-                              alt={post.images[0].directus_files_id?.filename_download || '画像 1'}
-                              className="w-full h-64 object-cover bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity"
-                              onClick={() => {/* TODO: ライトボックス */}}
-                            />
-                          </div>
-                          {post.images.slice(1).map((img, idx) => (
-                            <div key={idx} className="rounded-lg overflow-hidden">
-                              <img
-                                src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${img.directus_files_id?.id}`}
-                                alt={img.directus_files_id?.filename_download || `画像 ${idx + 2}`}
-                                className="w-full h-32 object-cover bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity"
-                                onClick={() => {/* TODO: ライトボックス */}}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {post.images.length === 4 && (
-                        <div className="grid grid-cols-2 gap-2">
-                          {post.images.map((img, idx) => (
-                            <div key={idx} className="rounded-lg overflow-hidden">
-                              <img
-                                src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${img.directus_files_id?.id}`}
-                                alt={img.directus_files_id?.filename_download || `画像 ${idx + 1}`}
-                                className="w-full h-48 object-cover bg-gray-100 cursor-pointer hover:opacity-95 transition-opacity"
-                                onClick={() => {/* TODO: ライトボックス */}}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   {/* ハッシュタグ */}
                   {post.hashtags && Array.isArray(post.hashtags) && post.hashtags.length > 0 && (

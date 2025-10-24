@@ -97,7 +97,7 @@ export default async function GroupsPage() {
                   {group.category && typeof group.category === 'object' && (
                     <div className="mb-4">
                       <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                        {group.category.name}
+                        {(group.category as any).name}
                       </span>
                     </div>
                   )}

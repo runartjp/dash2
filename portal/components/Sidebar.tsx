@@ -25,6 +25,8 @@ import {
   faChevronRight,
   faChevronDown,
   faChevronUp,
+  faFolder,
+  faTasks,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -47,6 +49,13 @@ const menuItems: MenuSection[] = [
     ]
   },
   {
+    section: 'プロジェクト管理',
+    items: [
+      { name: 'プロジェクト', icon: faFolder, path: '/projects' },
+      { name: 'タスク', icon: faTasks, path: '/tasks' },
+    ]
+  },
+  {
     section: '公開コンテンツ',
     items: [
       { name: 'ブログ記事', icon: faNewspaper, path: '/articles' },
@@ -65,6 +74,7 @@ const menuItems: MenuSection[] = [
     items: [
       { name: 'タイムライン', icon: faNewspaper, path: '/community' },
       { name: 'グループ', icon: faUsers, path: '/groups' },
+      { name: 'プロフィール', icon: faUser, path: '/profile' },
     ]
   },
   {
@@ -84,6 +94,7 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'ダッシュボード': true,
+    'プロジェクト管理': true,
     '公開コンテンツ': true,
     '会員機能': true,
     'コミュニティ': true,
@@ -255,7 +266,11 @@ export default function Sidebar() {
             ) : session?.user ? (
               <div className="space-y-3">
                 {/* ユーザー情報 */}
-                <div className="flex items-center gap-3 p-2 rounded-md bg-gray-50">
+                <Link
+                  href="/profile"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 p-2 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                     <FontAwesomeIcon icon={faUser} className="w-5 h-5" />
                   </div>
@@ -264,10 +279,10 @@ export default function Sidebar() {
                       {session.user.name || session.user.email}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
-                      {session.user.email}
+                      {(session.user as any).username ? `@${(session.user as any).username}` : `ID: ${session.user.id?.substring(0, 8)}`}
                     </p>
                   </div>
-                </div>
+                </Link>
 
                 {/* ログアウトボタン */}
                 <button
@@ -298,11 +313,16 @@ export default function Sidebar() {
         {/* Collapsed時のユーザーアイコンのみ */}
         {collapsed && session?.user && (
           <div className="p-4 border-t border-gray-200">
-            <div className="flex justify-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+            <Link
+              href="/profile"
+              onClick={closeMobileMenu}
+              className="flex justify-center"
+              title="プロフィール"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold hover:opacity-80 transition-opacity cursor-pointer">
                 <FontAwesomeIcon icon={faUser} className="w-5 h-5" />
               </div>
-            </div>
+            </Link>
           </div>
         )}
       </aside>

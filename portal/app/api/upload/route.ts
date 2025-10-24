@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import sharp from 'sharp';
 
 export const runtime = 'nodejs';
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     // sharpで画像を圧縮・リサイズ
     const metadata = await sharp(buffer).metadata();
-    let processedBuffer = buffer;
+    let processedBuffer: Buffer = buffer;
 
     // 幅が最大幅を超える場合はリサイズ
     if (metadata.width && metadata.width > MAX_WIDTH) {
@@ -82,21 +82,21 @@ export async function POST(request: Request) {
           fit: 'inside',
         })
         .jpeg({ quality: QUALITY, progressive: true })
-        .toBuffer();
+        .toBuffer() as Buffer;
     } else {
       // リサイズ不要でも品質圧縮を適用
       if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
         processedBuffer = await sharp(buffer)
           .jpeg({ quality: QUALITY, progressive: true })
-          .toBuffer();
+          .toBuffer() as Buffer;
       } else if (file.type === 'image/png') {
         processedBuffer = await sharp(buffer)
           .png({ compressionLevel: 9, progressive: true })
-          .toBuffer();
+          .toBuffer() as Buffer;
       } else if (file.type === 'image/webp') {
         processedBuffer = await sharp(buffer)
           .webp({ quality: QUALITY })
-          .toBuffer();
+          .toBuffer() as Buffer;
       }
     }
 
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     const extension = file.name.split('.').pop() || 'jpg';
     const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
 
-    uploadFormData.append('file', new Blob([processedBuffer], { type: file.type }), filename);
+    uploadFormData.append('file', new Blob([processedBuffer as BlobPart], { type: file.type }), filename);
 
     const uploadResponse = await fetch(`${DIRECTUS_URL}/files`, {
       method: 'POST',

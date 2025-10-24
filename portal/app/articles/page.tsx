@@ -64,10 +64,10 @@ export default async function ArticlesPage() {
                       </span>
                     )}
 
-                    {article.tags && article.tags.length > 0 && (
+                    {article.tags && Array.isArray(article.tags) && (article.tags as string[]).length > 0 && (
                       <span className="flex items-center gap-1">
                         <FontAwesomeIcon icon={faTag} className="w-3 h-3" />
-                        {article.tags[0]}
+                        {(article.tags as string[])[0]}
                       </span>
                     )}
                   </div>
@@ -75,7 +75,7 @@ export default async function ArticlesPage() {
                   {article.category && typeof article.category === 'object' && (
                     <div className="mt-4">
                       <span className="inline-block px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                        {article.category.name}
+                        {(article.category as any).name}
                       </span>
                     </div>
                   )}
