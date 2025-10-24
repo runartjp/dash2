@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # PostgreSQL データベース
+  postgres:
+    image: postgres:15-alpine
+    container_name: dash2-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dash2_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dash2_password_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-dash2_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dash2-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dash2_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"  # ホスト側は5433（dashと競合しないように）
+
+  # Directus CMS
+  directus:
+    build:
+      context: ./directus
+      dockerfile: Dockerfile
+    container_name: dash2-directus
+    restart: always
+    ports:
+      - "8056:8055"  # ホスト側は8056（dashと競合しないように）
+    environment:
+      # General
+      KEY: ${DIRECTUS_KEY:-d41d8cd98f00b204e9800998ecf8427e}
+      SECRET: ${DIRECTUS_SECRET:-6b62c7d1f1e84c5a9f3b2d8e4f7a9c1b}
+
+      # Database
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-dash2_db}
+      DB_USER: ${POSTGRES_USER:-dash2_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dash2_password_2024}
+
+      # Admin User (first time setup)
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-dash2admin}
+
+      # URLs
+      PUBLIC_URL: http://localhost:8056
+
+      # CORS
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
+
+      # Security
+      AUTH_PROVIDERS: ""
+
+      # File Storage
+      STORAGE_LOCATIONS: local
+      STORAGE_LOCAL_DRIVER: local
+      STORAGE_LOCAL_ROOT: /directus/uploads
+
+      # Cache
+      CACHE_ENABLED: "false"
+
+      # Rate Limiting
+      RATE_LIMITER_ENABLED: "true"
+      RATE_LIMITER_POINTS: 50
+      RATE_LIMITER_DURATION: 1
+
+      # Logging
+      LOG_LEVEL: info
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+    networks:
+      - dash2-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  dash2-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  directus_uploads:
+  directus_extensions:

@@ -1,0 +1,20 @@
+{
+  "name": "dash2",
+  "version": "1.0.0",
+  "description": "Directus backend project for medical platform",
+  "scripts": {
+    "setup": "node scripts/setup-collections.js",
+    "relations": "node scripts/setup-relations.js",
+    "seed": "node scripts/seed-data.js",
+    "community:collections": "node scripts/setup-community-collections.js",
+    "community:relations": "node scripts/setup-community-relations.js",
+    "community:setup": "npm run community:collections && npm run community:relations"
+  },
+  "keywords": ["directus", "medical", "platform"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@directus/sdk": "^17.0.0",
+    "axios": "^1.6.0"
+  }
+}

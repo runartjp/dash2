@@ -1,0 +1,36 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Directus
+directus/uploads/
+directus/extensions/node_modules/
+
+# Docker volumes
+*.sql
+*.dump
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Build outputs
+dist/
+build/
+.next/
+portal/.next/
+
+# Database
+data/
